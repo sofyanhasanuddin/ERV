@@ -1,5 +1,6 @@
 package com.sofyan.erv;
 
+import com.sofyan.erv.helper.JpaHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -18,15 +19,12 @@ public class EntityRelationshipVisualizationApplication {
 		SpringApplication.run(EntityRelationshipVisualizationApplication.class, args);
 	}
 
-	@EventListener(ApplicationReadyEvent.class)
-	public void doMap() {
-
-//		String tableName = JpaHelper.getTableName( this.em, Product.class);
-//		System.out.println( tableName + " !!!!!!!!");
-
-		JpaHelper.getRelation( this.em );
-
-	}
+//	@EventListener(ApplicationReadyEvent.class)
+//	public void doMap() {
+//
+//		JpaHelper.getRelation( this.em );
+//
+//	}
 
 }
 
