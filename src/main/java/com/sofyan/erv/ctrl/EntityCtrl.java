@@ -6,6 +6,7 @@ import com.sofyan.erv.response.EntityInfoResponse;
 import com.sofyan.erv.response.Link;
 import com.sofyan.erv.response.Node;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,8 +35,8 @@ public class EntityCtrl {
 
             Node node = new Node();
             node.setId(1);
-            node.setLabel( entityInfoResponse.getClassName());
-            node.setName( entityInfoResponse.getTableName() );
+            node.setName( entityInfoResponse.getClassName());
+            node.setLabel( entityInfoResponse.getTableName() );
 
             nodes.add( node );
 
@@ -43,32 +44,17 @@ public class EntityCtrl {
                     .getListProperty()
                     .forEach(entityProperty -> {
 
-                        boolean hasRelation = false;
+                        if( !StringUtils.isEmpty( entityProperty.getRelationClass() ) ) {
 
-                        if ( entityProperty.getAttributeType().equals(Attribute.PersistentAttributeType.ONE_TO_ONE) ) {
-                            hasRelation = true;
-                        }else if ( entityProperty.getAttributeType().equals(Attribute.PersistentAttributeType.MANY_TO_ONE) ) {
-                            hasRelation = true;
-                        } else if ( entityProperty.getAttributeType().equals(Attribute.PersistentAttributeType.ONE_TO_MANY) ) {
-                            hasRelation = true;
-                        } else if ( entityProperty.getAttributeType().equals(Attribute.PersistentAttributeType.MANY_TO_MANY) ) {
-                            hasRelation = true;
-                        }
-
-                        if( hasRelation ) {
-
-                            Link link = new Link();
-                            link.setType( entityProperty.getAttributeType().toString() );
                             if(entityProperty.isOwnRelation() ) {
-                                link.setSource(node.getName());
-                                link.setTarget(entityProperty.getName() );
-                            }
-                            else {
-                                link.setSource(entityProperty.getName());
-                                link.setTarget(node.getName());
-                            }
 
-                            links.add(link);
+                                Link link = new Link();
+                                link.setType( entityProperty.getAttributeType().toString() );
+                                link.setSource( node.getName() );
+                                link.setTarget( entityProperty.getRelationClass() );
+                                links.add(link);
+
+                            }
 
                         }
 

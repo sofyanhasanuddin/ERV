@@ -8,6 +8,7 @@ public class EntityProperty implements Serializable {
     private Attribute.PersistentAttributeType attributeType;
     private String name;
     private String javaClass;
+    private String relationClass;
     private boolean ownRelation;
 
     public Attribute.PersistentAttributeType getAttributeType() {
@@ -40,6 +41,14 @@ public class EntityProperty implements Serializable {
 
     public void setOwnRelation(boolean ownRelation) {
         this.ownRelation = ownRelation;
+    }
+
+    public String getRelationClass() {
+        return relationClass;
+    }
+
+    public void setRelationClass(String relationClass) {
+        this.relationClass = relationClass;
     }
 
 }
