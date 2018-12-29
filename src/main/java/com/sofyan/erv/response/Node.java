@@ -2,9 +2,9 @@ package com.sofyan.erv.response;
 
 public class Node {
 
+    private Integer id;
     private String name;
     private String label;
-    private Integer id;
 
     public String getName() {
         return name;
@@ -29,5 +29,4 @@ public class Node {
     public void setId(Integer id) {
         this.id = id;
     }
-
 }

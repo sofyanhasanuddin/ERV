@@ -8,121 +8,119 @@ import javax.persistence.*;
 import javax.persistence.metamodel.Attribute;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 public class RelationHelper {
 
-    public static List<EntityInfoResponse> findAllClass(String packg) {
+    public static Map<String,EntityInfoResponse> findAllClass(final String packg) {
 
-        List<EntityInfoResponse> list = new ArrayList<>();
+        Map<String,EntityInfoResponse> result = new HashMap<>();
 
-        try (ScanResult scanResult = new ClassGraph().enableAllInfo().whitelistPackages( packg )
+        try (ScanResult scanResult = new ClassGraph()
+                .enableAllInfo()
                 .scan()) {
 
-            scanResult
-                    .getClassesWithAnnotation(Entity.class.getName())
-                    .stream()
-                    .forEach(classInfo -> {
+            Integer index = 0;
 
-                        String tableName = classInfo.getName();
+            for (ClassInfo classInfo : scanResult
+                    .getClassesWithAnnotation(Entity.class.getName())) {
 
-                        if (classInfo.hasAnnotation(Table.class.getName())) {
-                            tableName = classInfo
-                                    .getAnnotationInfo(Table.class.getName())
-                                    .getParameterValues()
-                                    .get("name").toString();
-                        }
+                String tableName = classInfo.getName();
 
-                        EntityInfoResponse eir = new EntityInfoResponse();
-                        eir.setClassName(classInfo.getName());
-                        eir.setTableName(tableName);
+                if (classInfo.hasAnnotation(Table.class.getName())) {
+                    tableName = classInfo
+                            .getAnnotationInfo(Table.class.getName())
+                            .getParameterValues()
+                            .get("name").toString();
+                }
 
-                        classInfo
-                                .getFieldInfo()
-                                .stream()
-                                .forEach(fieldInfo -> {
+                EntityInfoResponse eir = new EntityInfoResponse();
+                eir.setClassName(classInfo.getName());
+                eir.setTableName(tableName);
+                eir.setId( index++ );
 
-                                    boolean isColumn = false;
+                classInfo
+                        .getFieldInfo()
+                        .stream()
+                        .forEach(fieldInfo -> {
 
-                                    EntityProperty ep = new EntityProperty();
-                                    ep.setName(fieldInfo.getName());
-                                    ep.setJavaClass(fieldInfo.getTypeSignatureOrTypeDescriptor().toString());
+                            boolean isColumn = false;
 
-                                    if (fieldInfo.hasAnnotation(OneToOne.class.getName())) {
+                            EntityProperty ep = new EntityProperty();
+                            ep.setName(fieldInfo.getName());
+                            ep.setJavaClass(fieldInfo.getTypeSignatureOrTypeDescriptor().toString());
 
-                                        isColumn = true;
-                                        ep.setAttributeType(Attribute.PersistentAttributeType.ONE_TO_ONE);
-                                        ep.setRelationClass( getRelationClassForNonGeneric(fieldInfo));
+                            if (fieldInfo.hasAnnotation(OneToOne.class.getName())) {
 
-                                    }else if (fieldInfo.hasAnnotation(ManyToOne.class.getName())) {
+                                isColumn = true;
+                                ep.setAttributeType(Attribute.PersistentAttributeType.ONE_TO_ONE);
+                                ep.setRelationClass(getRelationClassForNonGeneric(fieldInfo));
 
-                                        isColumn = true;
-                                        ep.setAttributeType(Attribute.PersistentAttributeType.MANY_TO_ONE);
-                                        ep.setRelationClass( getRelationClassForNonGeneric(fieldInfo));
+                            } else if (fieldInfo.hasAnnotation(ManyToOne.class.getName())) {
 
-                                    } else if (fieldInfo.hasAnnotation(OneToMany.class.getName())) {
+                                isColumn = true;
+                                ep.setAttributeType(Attribute.PersistentAttributeType.MANY_TO_ONE);
+                                ep.setRelationClass(getRelationClassForNonGeneric(fieldInfo));
 
-                                        isColumn = true;
-                                        ep.setAttributeType(Attribute.PersistentAttributeType.ONE_TO_MANY);
-                                        ep.setRelationClass( getRelationClassForGeneric(classInfo,fieldInfo));
+                            } else if (fieldInfo.hasAnnotation(OneToMany.class.getName())) {
 
-                                    } else if (fieldInfo.hasAnnotation(ManyToMany.class.getName())) {
+                                isColumn = true;
+                                ep.setAttributeType(Attribute.PersistentAttributeType.ONE_TO_MANY);
+                                ep.setRelationClass(getRelationClassForGeneric(classInfo, fieldInfo));
 
-                                        isColumn = true;
-                                        ep.setAttributeType(Attribute.PersistentAttributeType.MANY_TO_MANY);
-                                        ep.setRelationClass( getRelationClassForGeneric(classInfo,fieldInfo));
+                            } else if (fieldInfo.hasAnnotation(ManyToMany.class.getName())) {
 
-                                    } else if (fieldInfo.hasAnnotation(Embedded.class.getName())) {
+                                isColumn = true;
+                                ep.setAttributeType(Attribute.PersistentAttributeType.MANY_TO_MANY);
+                                ep.setRelationClass(getRelationClassForGeneric(classInfo, fieldInfo));
 
-                                        isColumn = true;
-                                        ep.setAttributeType(Attribute.PersistentAttributeType.EMBEDDED);
-                                        ep.setRelationClass( getRelationClassForNonGeneric(fieldInfo));
+                            } else if (fieldInfo.hasAnnotation(Embedded.class.getName())) {
 
-                                    } else if (fieldInfo.hasAnnotation(Column.class.getName())) {
+                                isColumn = true;
+                                ep.setAttributeType(Attribute.PersistentAttributeType.EMBEDDED);
+                                ep.setRelationClass(getRelationClassForNonGeneric(fieldInfo));
 
-                                        isColumn = true;
-                                        ep.setAttributeType(Attribute.PersistentAttributeType.BASIC);
+                            } else if (fieldInfo.hasAnnotation(Column.class.getName())) {
 
-                                    }
+                                isColumn = true;
+                                ep.setAttributeType(Attribute.PersistentAttributeType.BASIC);
 
-                                    if (isColumn) {
+                            }
 
-                                        if (fieldInfo.hasAnnotation(JoinColumn.class.getName()))
-                                            ep.setOwnRelation(true);
+                            if (isColumn) {
 
-                                        eir.getListProperty().add(ep);
-                                    }
+                                if (fieldInfo.hasAnnotation(JoinColumn.class.getName()))
+                                    ep.setOwnRelation(true);
 
-
-                                });
-
-                        list.add(eir);
+                                eir.getListProperty().add(ep);
+                            }
 
 
-                    });
+                        });
 
-            return list;
+                result.put( eir.getClassName(),eir );
+            }
+
+            return result;
         }
 
     }
 
-    private static String getRelationClassForNonGeneric(FieldInfo fieldInfo ) {
+    private static String getRelationClassForNonGeneric(FieldInfo fieldInfo) {
 
         return fieldInfo.getTypeSignatureOrTypeDescriptor().toString();
 
     }
 
-    private static String getRelationClassForGeneric(ClassInfo classInfo,FieldInfo fieldInfo ) {
+    private static String getRelationClassForGeneric(ClassInfo classInfo, FieldInfo fieldInfo) {
 
         TypeSignature generic = fieldInfo.getTypeSignatureOrTypeDescriptor();
 
-        if( generic != null ) {
+        if (generic != null) {
             try {
                 Class c = Class.forName(classInfo.getName());
-                Field f = c.getDeclaredField( fieldInfo.getName() );
+                Field f = c.getDeclaredField(fieldInfo.getName());
                 return ((Class) ((ParameterizedType) f.getGenericType()).getActualTypeArguments()[0]).getName();
             } catch (Exception _e) {
                 _e.printStackTrace();

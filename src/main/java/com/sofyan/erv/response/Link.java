@@ -2,23 +2,23 @@ package com.sofyan.erv.response;
 
 public class Link {
 
-    private String source;
-    private String target;
+    private Integer source;
+    private Integer target;
     private String type;
 
-    public String getSource() {
+    public Integer getSource() {
         return source;
     }
 
-    public void setSource(String source) {
+    public void setSource(Integer source) {
         this.source = source;
     }
 
-    public String getTarget() {
+    public Integer getTarget() {
         return target;
     }
 
-    public void setTarget(String target) {
+    public void setTarget(Integer target) {
         this.target = target;
     }
 

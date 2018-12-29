@@ -23,20 +23,30 @@ public class EntityCtrl {
     @Autowired
     private EntityManager em;
 
+    @GetMapping(path = "/test")
+    public Map<String,Object> test() {
+
+        return new HashMap<>();
+    }
+
     @GetMapping(path = "/list-entities")
     public Map<String,Object> getEntities() {
 
         List<Node> nodes = new ArrayList<>();
         List<Link> links = new ArrayList<>();
+        List<EntityInfoResponse> list = new ArrayList<>();
 
         //return JpaHelper.getInfo( em );
-        List<EntityInfoResponse> list =  RelationHelper.findAllClass("com.sofyan.erv");
-        list.forEach(entityInfoResponse -> {
+        Map<String,EntityInfoResponse> relationMap =  RelationHelper.findAllClass("com.sofyan.erv");
+
+        relationMap.forEach((s, entityInfoResponse) -> {
+
+            list.add( entityInfoResponse );
 
             Node node = new Node();
-            node.setId(1);
             node.setName( entityInfoResponse.getClassName());
             node.setLabel( entityInfoResponse.getTableName() );
+            node.setId( entityInfoResponse.getId() );
 
             nodes.add( node );
 
@@ -49,9 +59,10 @@ public class EntityCtrl {
                             if(entityProperty.isOwnRelation() ) {
 
                                 Link link = new Link();
+                                link.setSource( node.getId() );
+                                link.setTarget( relationMap.get(entityProperty.getRelationClass()).getId() );
                                 link.setType( entityProperty.getAttributeType().toString() );
-                                link.setSource( node.getName() );
-                                link.setTarget( entityProperty.getRelationClass() );
+
                                 links.add(link);
 
                             }
@@ -59,7 +70,6 @@ public class EntityCtrl {
                         }
 
                     });
-
         });
 
         Map<String,Object> response = new HashMap<>();

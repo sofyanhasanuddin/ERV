@@ -5,6 +5,7 @@ import java.util.List;
 
 public class EntityInfoResponse {
 
+    private Integer id;
     private String className;
     private String tableName;
     private List<EntityProperty> listProperty = new ArrayList<>();
@@ -31,5 +32,13 @@ public class EntityInfoResponse {
 
     public void setListProperty(List<EntityProperty> listProperty) {
         this.listProperty = listProperty;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 }
