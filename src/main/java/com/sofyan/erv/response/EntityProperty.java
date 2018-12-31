@@ -5,9 +5,15 @@ import java.io.Serializable;
 
 public class EntityProperty implements Serializable {
 
-    private Attribute.PersistentAttributeType attributeType;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	private Attribute.PersistentAttributeType attributeType;
     private String name;
-    private String javaClass;
+    private String classNameWithPackage;
+    private String className;
     private String relationClass;
     private boolean ownRelation;
 
@@ -19,7 +25,15 @@ public class EntityProperty implements Serializable {
         this.attributeType = attributeType;
     }
 
-    public String getName() {
+    public String getClassName() {
+		return className;
+	}
+
+	public void setClassName(String className) {
+		this.className = className;
+	}
+
+	public String getName() {
         return name;
     }
 
@@ -27,15 +41,15 @@ public class EntityProperty implements Serializable {
         this.name = name;
     }
 
-    public String getJavaClass() {
-        return javaClass;
-    }
+    public String getClassNameWithPackage() {
+		return classNameWithPackage;
+	}
 
-    public void setJavaClass(String javaClass) {
-        this.javaClass = javaClass;
-    }
+	public void setClassNameWithPackage(String classNameWithPackage) {
+		this.classNameWithPackage = classNameWithPackage;
+	}
 
-    public boolean isOwnRelation() {
+	public boolean isOwnRelation() {
         return ownRelation;
     }
 

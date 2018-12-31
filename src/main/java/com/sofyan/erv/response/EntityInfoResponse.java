@@ -1,16 +1,31 @@
 package com.sofyan.erv.response;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EntityInfoResponse {
+public class EntityInfoResponse implements Serializable {
 
-    private Integer id;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	private Integer id;
+    private String classNameWithPackage;
     private String className;
     private String tableName;
     private List<EntityProperty> listProperty = new ArrayList<>();
 
-    public String getClassName() {
+    public String getClassNameWithPackage() {
+		return classNameWithPackage;
+	}
+
+	public void setClassNameWithPackage(String classNameWithPackage) {
+		this.classNameWithPackage = classNameWithPackage;
+	}
+
+	public String getClassName() {
         return className;
     }
 

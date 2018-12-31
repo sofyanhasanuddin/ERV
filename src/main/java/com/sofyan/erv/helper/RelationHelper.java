@@ -1,23 +1,38 @@
 package com.sofyan.erv.helper;
 
-import com.sofyan.erv.response.EntityInfoResponse;
-import com.sofyan.erv.response.EntityProperty;
-import io.github.classgraph.*;
-
-import javax.persistence.*;
-import javax.persistence.metamodel.Attribute;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.metamodel.Attribute;
+
+import com.sofyan.erv.response.EntityInfoResponse;
+import com.sofyan.erv.response.EntityProperty;
+
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ClassInfo;
+import io.github.classgraph.FieldInfo;
+import io.github.classgraph.ScanResult;
+
 public class RelationHelper {
 
-    public static Map<String,EntityInfoResponse> findAllClass(final String packg) {
+    public static Map<String,EntityInfoResponse> findAllClass(final String file,
+    		final String pkg) {
 
         Map<String,EntityInfoResponse> result = new HashMap<>();
 
         try (ScanResult scanResult = new ClassGraph()
+                .verbose()
+                .overrideClasspath(file)
+                .whitelistPackages(pkg)
                 .enableAllInfo()
                 .scan()) {
 
@@ -29,14 +44,19 @@ public class RelationHelper {
                 String tableName = classInfo.getName();
 
                 if (classInfo.hasAnnotation(Table.class.getName())) {
-                    tableName = classInfo
+                	try {
+                		tableName = classInfo
                             .getAnnotationInfo(Table.class.getName())
                             .getParameterValues()
                             .get("name").toString();
+                	}catch (Exception e) {
+						e.printStackTrace();
+					}
                 }
 
                 EntityInfoResponse eir = new EntityInfoResponse();
-                eir.setClassName(classInfo.getName());
+                eir.setClassNameWithPackage(classInfo.getName());
+                eir.setClassName(classInfo.getSimpleName());
                 eir.setTableName(tableName);
                 eir.setId( index++ );
 
@@ -49,7 +69,8 @@ public class RelationHelper {
 
                             EntityProperty ep = new EntityProperty();
                             ep.setName(fieldInfo.getName());
-                            ep.setJavaClass(fieldInfo.getTypeSignatureOrTypeDescriptor().toString());
+                            ep.setClassNameWithPackage(fieldInfo.getTypeSignatureOrTypeDescriptor().toString());
+                            ep.setClassName( StringUtil.getSimpleClassName(ep.getClassNameWithPackage()));
 
                             if (fieldInfo.hasAnnotation(OneToOne.class.getName())) {
 
@@ -96,10 +117,9 @@ public class RelationHelper {
                                 eir.getListProperty().add(ep);
                             }
 
-
                         });
 
-                result.put( eir.getClassName(),eir );
+                result.put( eir.getClassNameWithPackage(),eir );
             }
 
             return result;
@@ -114,20 +134,20 @@ public class RelationHelper {
     }
 
     private static String getRelationClassForGeneric(ClassInfo classInfo, FieldInfo fieldInfo) {
+        
+        return StringUtil.getGenericClass( fieldInfo.getTypeSignatureOrTypeDescriptor().toString() );
 
-        TypeSignature generic = fieldInfo.getTypeSignatureOrTypeDescriptor();
-
-        if (generic != null) {
-            try {
-                Class c = Class.forName(classInfo.getName());
-                Field f = c.getDeclaredField(fieldInfo.getName());
-                return ((Class) ((ParameterizedType) f.getGenericType()).getActualTypeArguments()[0]).getName();
-            } catch (Exception _e) {
-                _e.printStackTrace();
-            }
-        }
-
-        return null;
+//        if (generic != null) {
+//            try {
+//                Class c = Class.forName(classInfo.getName());
+//                Field f = c.getDeclaredField(fieldInfo.getName());
+//                return ((Class) ((ParameterizedType) f.getGenericType()).getActualTypeArguments()[0]).getName();
+//            } catch (Exception _e) {
+//                _e.printStackTrace();
+//            }
+//        }
+//
+//        return null;
 
     }
 

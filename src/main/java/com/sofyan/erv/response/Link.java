@@ -2,32 +2,41 @@ package com.sofyan.erv.response;
 
 public class Link {
 
-    private Integer source;
-    private Integer target;
-    private String type;
+	private Integer source;
+	private Integer target;
+	private String type;
+	private String fieldRelation;
 
-    public Integer getSource() {
-        return source;
-    }
+	public String getFieldRelation() {
+		return fieldRelation;
+	}
 
-    public void setSource(Integer source) {
-        this.source = source;
-    }
+	public void setFieldRelation(String fieldRelation) {
+		this.fieldRelation = fieldRelation;
+	}
 
-    public Integer getTarget() {
-        return target;
-    }
+	public Integer getSource() {
+		return source;
+	}
 
-    public void setTarget(Integer target) {
-        this.target = target;
-    }
+	public void setSource(Integer source) {
+		this.source = source;
+	}
 
-    public String getType() {
-        return type;
-    }
+	public Integer getTarget() {
+		return target;
+	}
 
-    public void setType(String type) {
-        this.type = type;
-    }
+	public void setTarget(Integer target) {
+		this.target = target;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
 
 }
