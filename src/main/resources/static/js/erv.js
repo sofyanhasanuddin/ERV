@@ -11,7 +11,7 @@ var margin = {
 
 // dimensions
 var width = window.innerWidth - margin.left - margin.right;
-var height = window.innerHeight - margin.top - margin.bottom;
+var height = 1500 - margin.top - margin.bottom;
 
 var radius = 200;
 
@@ -30,9 +30,10 @@ function initSVG() {
 	
 	// create an svg to draw in
     svg = d3.select("body")
+    	.select("#drawArea")
         .append("svg")
         .attr("width", window.innerWidth)
-        .attr("height", window.innerHeight)
+        .attr("height", 2000)
         .append('g')
         .attr('transform', 'translate(' + margin.top + ',' + margin.left + ')');
 
@@ -65,11 +66,13 @@ function initForce() {
     }).distance(100)
     .strength(0.025))
     // push nodes apart to space them out
-    .force("charge", d3.forceManyBody().strength(-30))
+    .force("charge", d3.forceManyBody().strength(-80))
     // add some collision detection so they don't overlap
     .force("collide", d3.forceCollide().radius(12))
     // and draw them around the centre of the space
     .force("center", d3.forceCenter(width / 2, height / 2))
+    .alphaTarget(0)
+    .alphaDecay(0.05)
     .on('end', function() {
         d3.selectAll(".link").each(
             function(d) {
@@ -150,7 +153,7 @@ function update( links, nodes ) {
             // return d.colour;
             return "#008142";
         })
-        .on("mouseover", mouseOver(.2))
+        .on("mouseover", mouseOver(.1))
         .on("mouseout", mouseOut);;
 
     // hover text for the node
@@ -345,30 +348,9 @@ $('#uploadAndScan').on('click', function() {
     });
 });
 
-$('#scan').on('click', function() {
-	
-	finishFirstTimeRender = false;
-	
-	initSVG();
-
-    initForce();
-
-    svg.selectAll(".node,.link,.edgelabel,text,.edgelabels,edgepaths").remove();
-
-    // load the graph
-    $.ajax({
-        type: "GET",
-        url: 'list-entities',
-        async: false,
-    }).done(function (resp) {
-        update( resp.links, resp.nodes );
-    });
-
-});
-
 function getToken() {
     $.ajax({
-        url: 'generateCRFS',
+        url: 'generateCSRF',
         type: 'GET',
         async: false,
         success:function(data){

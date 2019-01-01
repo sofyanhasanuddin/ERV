@@ -4,20 +4,29 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EntityInfoResponse implements Serializable {
+public class EntityInfo implements Serializable {
 
     /**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	private Integer id;
+	private String id;
     private String classNameWithPackage;
     private String className;
     private String tableName;
     private List<EntityProperty> listProperty = new ArrayList<>();
+    private String color;
+    
+    public String getColor() {
+		return color;
+	}
 
-    public String getClassNameWithPackage() {
+	public void setColor(String color) {
+		this.color = color;
+	}
+
+	public String getClassNameWithPackage() {
 		return classNameWithPackage;
 	}
 
@@ -49,11 +58,12 @@ public class EntityInfoResponse implements Serializable {
         this.listProperty = listProperty;
     }
 
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
+    
 }

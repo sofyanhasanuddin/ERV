@@ -5,11 +5,15 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Title</title>
+    <title>Entity Relationship Visualization</title>
 
     <style type="text/css">
         text {
-            font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+            font-family: "HelveticaNeue-Light", 
+            "Helvetica Neue Light", 
+            "Helvetica Neue", Helvetica, Arial, 
+            "Lucida Grande", sans-serif;
+            font-size: 0.70em;
         }
         svg {
             width: 100%;
@@ -31,23 +35,29 @@
     
 </head>
 
-<body>
-
-    <form id="fIn" enctype="multipart/form-data" method="post" name="fileinfo">
-    	<div>
-	        <label>File to upload</label>
-	        <input type="file" name="file" id="file" required />
-        </div>
-        <div>
-	        <label>Package to scan</label>
-	        <input type="text" name="pkg" id="pkg" required />
-        </div>
-    </form>
-
-    <input type="button" id="uploadAndScan" value="Upload and Scan" />
-    <!-- <input type="button" id="scan" value="Scan" /> -->
-
-    <hr/>
+<body style="margin: 0;">
+	<div style="position: fixed;
+				top: 0px;left:0px;
+				border: 1px solid black;
+				width: 100%;" >
+		<table>
+			<tr>
+				<td>File to upload</td>
+				<td>:</td>
+				<td><input type="file" name="file" id="file" required /></td>
+			</tr>
+			<tr>
+				<td>Package to scan</td>
+				<td>:</td>
+				<td><input type="text" name="pkg" id="pkg" required /></td>
+			</tr>
+			<tr>
+				<td colspan="3"><input type="button" id="uploadAndScan" value="Upload and Scan" /></td>
+			</tr>
+		</table>
+    </div>
+    <div id="drawArea">
+    </div>
 
 </body>
 

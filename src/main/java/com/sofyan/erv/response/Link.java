@@ -2,8 +2,8 @@ package com.sofyan.erv.response;
 
 public class Link {
 
-	private Integer source;
-	private Integer target;
+	private String source;
+	private String target;
 	private String type;
 	private String fieldRelation;
 
@@ -15,19 +15,19 @@ public class Link {
 		this.fieldRelation = fieldRelation;
 	}
 
-	public Integer getSource() {
+	public String getSource() {
 		return source;
 	}
 
-	public void setSource(Integer source) {
+	public void setSource(String source) {
 		this.source = source;
 	}
 
-	public Integer getTarget() {
+	public String getTarget() {
 		return target;
 	}
 
-	public void setTarget(Integer target) {
+	public void setTarget(String target) {
 		this.target = target;
 	}
 

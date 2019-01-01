@@ -1,7 +1,9 @@
-package com.sofyan.erv.helper;
+package com.sofyan.erv.util;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Embedded;
@@ -14,7 +16,9 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.metamodel.Attribute;
 
-import com.sofyan.erv.response.EntityInfoResponse;
+import org.springframework.util.CollectionUtils;
+
+import com.sofyan.erv.response.EntityInfo;
 import com.sofyan.erv.response.EntityProperty;
 
 import io.github.classgraph.ClassGraph;
@@ -22,21 +26,18 @@ import io.github.classgraph.ClassInfo;
 import io.github.classgraph.FieldInfo;
 import io.github.classgraph.ScanResult;
 
-public class RelationHelper {
+public class RelationUtil {
 
-    public static Map<String,EntityInfoResponse> findAllClass(final String file,
+    public static Map<String,EntityInfo> findAllClass(final String file,
     		final String pkg) {
 
-        Map<String,EntityInfoResponse> result = new HashMap<>();
+        Map<String,EntityInfo> result = new HashMap<>();
 
         try (ScanResult scanResult = new ClassGraph()
-                .verbose()
                 .overrideClasspath(file)
                 .whitelistPackages(pkg)
                 .enableAllInfo()
                 .scan()) {
-
-            Integer index = 0;
 
             for (ClassInfo classInfo : scanResult
                     .getClassesWithAnnotation(Entity.class.getName())) {
@@ -50,15 +51,15 @@ public class RelationHelper {
                             .getParameterValues()
                             .get("name").toString();
                 	}catch (Exception e) {
-						e.printStackTrace();
+                		//silently
 					}
                 }
 
-                EntityInfoResponse eir = new EntityInfoResponse();
+                EntityInfo eir = new EntityInfo();
                 eir.setClassNameWithPackage(classInfo.getName());
                 eir.setClassName(classInfo.getSimpleName());
                 eir.setTableName(tableName);
-                eir.setId( index++ );
+                eir.setId( UUID.randomUUID().toString());
 
                 classInfo
                         .getFieldInfo()
@@ -126,6 +127,70 @@ public class RelationHelper {
         }
 
     }
+    
+    public static EntityInfo findOneClass(final String file,
+    		final String pkgWithClassName) {
+    	
+    	EntityInfo eir = new EntityInfo();
+
+        try (ScanResult scanResult = new ClassGraph()
+                .overrideClasspath(file)
+                .whitelistPackages( StringUtil.getPackageFromClass(pkgWithClassName) )
+                .enableAllInfo()
+                .scan()) {
+        	
+        	List<ClassInfo> l = scanResult.getClassesWithAnnotation(Entity.class.getName());
+        	if( CollectionUtils.isEmpty(l) )
+        		throw new RuntimeException("Failed to get specifiec class with parameter : " + pkgWithClassName);
+        	
+        	String className = StringUtil.getSimpleClassName(pkgWithClassName);
+        	
+        	ClassInfo classInfo =  null;
+        	
+        	for (ClassInfo classInfoInList : l) {
+				if( classInfoInList.getSimpleName().equals( className) ) {
+					classInfo = classInfoInList;
+					break;
+				}
+			}
+        	
+        	if( classInfo == null )
+        		throw new RuntimeException("Cannot get Class : " + pkgWithClassName );
+
+            String tableName = classInfo.getName();
+
+            if (classInfo.hasAnnotation(Table.class.getName())) {
+            	try {
+            		tableName = classInfo
+                        .getAnnotationInfo(Table.class.getName())
+                        .getParameterValues()
+                        .get("name").toString();
+            	}catch (Exception e) {
+            		//silently
+				}
+            }
+            
+            eir.setClassNameWithPackage(classInfo.getName());
+            eir.setClassName(classInfo.getSimpleName());
+            eir.setTableName(tableName);
+            eir.setId( UUID.randomUUID().toString() );
+
+	        classInfo
+                .getFieldInfo()
+                .stream()
+                .forEach(fieldInfo -> {
+
+                    EntityProperty ep = new EntityProperty();
+                    ep.setName(fieldInfo.getName());
+                    ep.setClassNameWithPackage(fieldInfo.getTypeSignatureOrTypeDescriptor().toString());
+                    ep.setClassName( StringUtil.getSimpleClassName(ep.getClassNameWithPackage()));
+                    eir.getListProperty().add(ep);
+                    
+                });
+            }
+            
+            return eir;
+        }
 
     private static String getRelationClassForNonGeneric(FieldInfo fieldInfo) {
 
@@ -136,18 +201,6 @@ public class RelationHelper {
     private static String getRelationClassForGeneric(ClassInfo classInfo, FieldInfo fieldInfo) {
         
         return StringUtil.getGenericClass( fieldInfo.getTypeSignatureOrTypeDescriptor().toString() );
-
-//        if (generic != null) {
-//            try {
-//                Class c = Class.forName(classInfo.getName());
-//                Field f = c.getDeclaredField(fieldInfo.getName());
-//                return ((Class) ((ParameterizedType) f.getGenericType()).getActualTypeArguments()[0]).getName();
-//            } catch (Exception _e) {
-//                _e.printStackTrace();
-//            }
-//        }
-//
-//        return null;
 
     }
 
