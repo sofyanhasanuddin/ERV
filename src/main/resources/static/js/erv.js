@@ -21,6 +21,8 @@ var link,
     edgepaths,
     linkedByIndex = {};
 
+const R = 18;
+
 var svg;
 var simulation;
 
@@ -39,19 +41,35 @@ function initSVG() {
 
     
     
-    svg.append('defs').append('marker')
-        .attrs({'id':'arrowhead',
-            'viewBox':'-0 -5 10 10',
-            'refX':13,
-            'refY':0,
-            'orient':'auto',
-            'markerWidth':13,
-            'markerHeight':13,
-            'xoverflow':'visible'})
+//    svg.append('defs').append('marker')
+//        .attrs({'id':'arrowhead',
+//            'viewBox':'-0 -5 10 10',
+//            'refX':13,
+//            'refY':0,
+//            'orient':'auto',
+//            'markerWidth':13,
+//            'markerHeight':13,
+//            'xoverflow':'visible'})
+//        .append('svg:path')
+//        .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+//        .attr('fill', '#999')
+//        .style('stroke','none');
+    
+    // add defs-marker
+    // add defs-markers
+    svg.append('svg:defs').selectAll('marker')
+      .data([{ id: 'end-arrow', opacity: 1 }, { id: 'end-arrow-fade', opacity: 0 }])
+      .enter().append('marker')
+        .attr('id', d => d.id)
+        .attr('viewBox', '-0 -5 10 10')
+        .attr('refX', 13)
+        .attr('refY', 0)
+        .attr('markerWidth', 13)
+        .attr('markerHeight', 13)
+        .attr('orient', 'auto')
         .append('svg:path')
-        .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
-        .attr('fill', '#999')
-        .style('stroke','none');
+          .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+          .style('opacity', d => d.opacity);
 	
 }
 
@@ -102,7 +120,8 @@ function update( links, nodes ) {
         .attr('stroke', function(d){
             return "#ddd";
         })
-        .attr('marker-end','url(#arrowhead)');
+        //.attr('marker-end','url(#arrowhead)');
+        .attr('marker-end', 'url(#end-arrow)');
 
     edgepaths = svg.selectAll(".edgepath")
         .data(links)
@@ -153,8 +172,8 @@ function update( links, nodes ) {
             // return d.colour;
             return "#008142";
         })
-        .on("mouseover", mouseOver(.1))
-        .on("mouseout", mouseOut);;
+        .on('mouseover', mouseOver(0))
+        .on('mouseout', mouseOver(1));
 
     // hover text for the node
     node.append("title")
@@ -200,6 +219,12 @@ function isConnected(a, b) {
     return linkedByIndex[a.index + "," + b.index] || linkedByIndex[b.index + "," + a.index] || a.index == b.index;
 }
 
+//check the dictionary to see if nodes are linked
+function isLinkConnected(a, b) {
+	return a.id == b.source.id || a.id == b.target.id;
+    //return linkedByIndex[a.source.index + "," + b.source.index] || linkedByIndex[b.source.index + "," + a.source.index];
+}
+
 // fade nodes on hover
 function mouseOver(opacity) {
     return function(d) {
@@ -221,6 +246,11 @@ function mouseOver(opacity) {
         link.style("stroke", function(o){
             return o.source === d || o.target === d ? o.source.colour : "#ddd";
         });
+        link.attr('marker-end', o => (opacity === 1 || o.source === d || o.target === d ? 'url(#end-arrow)' : 'url(#end-arrow-fade)'));
+        edgelabels.style("opacity", function(o) {
+            thisOpacity = isLinkConnected(d, o) ? 1 : opacity;
+            return thisOpacity;
+        });
     };
 }
 
@@ -229,6 +259,7 @@ function mouseOut() {
     node.style("fill-opacity", 1);
     link.style("stroke-opacity", 1);
     link.style("stroke", "#ddd");
+    link.attr('marker-end', o => (opacity === 1 || o.source === d || o.target === d ? 'url(#end-arrow)' : 'url(#end-arrow-fade)'));
 }
 
 // on each tick, update node and link positions
